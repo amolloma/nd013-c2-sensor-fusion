@@ -15,6 +15,7 @@ import cv2
 import numpy as np
 import torch
 import zlib
+import open3d as o3d
 
 # add project directory to python path to enable relative imports
 import os
@@ -37,16 +38,32 @@ def show_pcl(pcl):
     ####### ID_S1_EX2 START #######     
     #######
     print("student task ID_S1_EX2")
+    def right_arrow (vis):
+        print("key pressed")
+        vis.update_geometry(pcd)
+        vis.update_renderer()
+        vis.poll_events()
+        vis.run()
 
     # step 1 : initialize open3d with key callback and create window
-    
+    vis =  o3d.visualization.VisualizerWithKeyCallback()
+    vis.create_window(window_name = "lidar point cloud", width=1920, height =1080, visible=True)
+                 
     # step 2 : create instance of open3d point-cloud class
+    pcd = o3d.geometry.PointCloud()
 
     # step 3 : set points in pcd instance by converting the point-cloud into 3d vectors (using open3d function Vector3dVector)
-
+    pcd.points = o3d.utility.Vector3dVector(pcl[:,0:3])
+       
     # step 4 : for the first frame, add the pcd instance to visualization using add_geometry; for all other frames, use update_geometry instead
+    vis.add_geometry(pcd)
+           
+    vis.register_key_callback(262, right_arrow)
+    
     
     # step 5 : visualize point cloud and keep window open until right-arrow is pressed (key-code 262)
+    vis.run()
+    vis.destroy_window()
 
     #######
     ####### ID_S1_EX2 END #######     
@@ -84,17 +101,16 @@ def show_range_image(frame, lidar_name):
     # step 5 : map the intensity channel onto an 8-bit scale and normalize with the difference between the 1- and 99-percentile to mitigate the influence of outliers
     # multiple entire range with half of max value to contrast adjust, else you will only see bright spots
     # normalize adjusted range and map to grayscale
-    ri_intensity = (np.amax(ri_intensity)/2) * ri_intensity * 255 /(np.amax(ri_intensity)-np.amin(ri_intensity))
+    ri_intensity = (np.amax(ri_intensity)) * ri_intensity * 255 /(np.amax(ri_intensity)-np.amin(ri_intensity))
     image_intensity = ri_intensity.astype(np.uint8)
     
     # step 6 : stack the range and intensity image vertically using np.vstack and convert the result to an unsigned 8-bit integer
-    
     img_range_intensity = np.vstack((image_range, image_intensity))
     
     #######
     ####### ID_S1_EX1 END #######     
     
-    return img_range_intensity
+    return image_intensity
 
 
 # create birds-eye view of lidar data
@@ -115,11 +131,15 @@ def bev_from_pcl(lidar_pcl, configs):
     print("student task ID_S2_EX1")
 
     ## step 1 :  compute bev-map discretization by dividing x-range by the bev-image height (see configs)
+    bev_discret = (configs.lim_x[1]-configs.lim_x[0])/configs.height
 
-    ## step 2 : create a copy of the lidar pcl and transform all metrix x-coordinates into bev-image coordinates    
-
+    ## step 2 : create a copy of the lidar pcl and transform all metrix x-coordinates into bev-image coordinates  
+    lidar_pcl_copy = np.copy(lidar_pcl)
+    lidar_pcl_copy[:, 0] = np.int_(np.floor(lidar_pcl_copy[:, 0]/bev_discret))
+    
     # step 3 : perform the same operation as in step 2 for the y-coordinates but make sure that no negative bev-coordinates occur
-
+    lidar_pcl_copy[:, 1] = np.int_(np.floor(lidar_pcl_copy[:, 0]/bev_discret)+ configs.width/2)
+    
     # step 4 : visualize point-cloud using the function show_pcl from a previous task
     
     #######
