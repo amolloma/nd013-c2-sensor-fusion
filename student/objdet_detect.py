@@ -24,14 +24,15 @@ sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 
 # model-related
 from tools.objdet_models.fpn_resnet.models import fpn_resnet
-from tools.objdet_models.fpn_resnet.utils.evaluation_utils import decode, post_processing 
+from tools.objdet_models.fpn_resnet.utils.evaluation_utils import decode, post_processing
+from tools.objdet_models.fpn_resnet.utils.torch_utils import _sigmoid
 
 from tools.objdet_models.darknet.models.darknet2pytorch import Darknet as darknet
 from tools.objdet_models.darknet.utils.evaluation_utils import post_processing_v2
 
 
 # load model-related parameters into an edict
-def load_configs_model(model_name='darknet', configs=None):
+def load_configs_model(model_name='fpn_resnet', configs=None):
 
     # init config file, if none has been passed
     if configs==None:
@@ -67,29 +68,28 @@ def load_configs_model(model_name='darknet', configs=None):
         configs.saved_fn = 'fpn_resnet'
         configs.arch = 'fpn_resnet'
         configs.K = 50
-
         configs.num_samples = None
-        configs.num_workers = 1
+        configs.num_workers = 4
         configs.batch_size = 4
-        configs.peak_thresh = 0.5
+        configs.no_cuda = False
+        configs.gpu_idx = 0
+        configs.conf_thresh = 0.5
+        configs.peak_thresh = 0.2
         configs.save_test_output = False
         configs.output_formate = 'image'
-        configs.output_video_fn = 'out_fpn_resnet_18'
+        configs.output_video_fn = 'out_fpn_resnet'
         configs.output_width = 608
         configs.distributed = False
         configs.img_size = 608
         configs.nms_thresh = 0.4
         configs.num_samples = None
         configs.num_workers = 4
-        
         configs.pin_memory = True
         configs.distributed = False  # For testing on 1 GPU only
-
         configs.input_size = (608, 608)
         configs.hm_size = (152, 152)
         configs.down_ratio = 4
         configs.max_objects = 50
-
         configs.imagenet_pretrained = False
         configs.head_conv = 64
         configs.num_classes = 3
@@ -163,7 +163,9 @@ def create_model(configs):
         ####### ID_S3_EX1-4 START #######     
         #######
         print("student task ID_S3_EX1-4")
-        model = fpn_resnet()
+        model = fpn_resnet.get_pose_net(num_layers=18, heads=configs.heads, head_conv=configs.head_conv,
+                                        imagenet_pretrained=configs.imagenet_pretrained)
+        
         #######
         ####### ID_S3_EX1-4 END #######     
     
@@ -212,6 +214,14 @@ def detect_objects(input_bev_maps, model, configs):
             ####### ID_S3_EX1-5 START #######     
             #######
             print("student task ID_S3_EX1-5")
+            outputs['hm_cen'] = _sigmoid(outputs['hm_cen'])
+            outputs['cen_offset'] = _sigmoid(outputs['cen_offset'])
+            # detections size (batch_size, K, 10)
+            detections = decode(outputs['hm_cen'], outputs['cen_offset'], outputs['direction'], outputs['z_coor'],
+                                outputs['dim'], K=configs.K)
+            detections = detections.cpu().numpy().astype(np.float32)
+            detections = post_processing(detections, configs)
+            print(detections[0][1])
 
             #######
             ####### ID_S3_EX1-5 END #######     
@@ -225,9 +235,10 @@ def detect_objects(input_bev_maps, model, configs):
     objects = [] 
 
     ## step 1 : check whether there are any detections
-
-        ## step 2 : loop over all detections
+    # if len(detections)>0:
         
+        ## step 2 : loop over all detections
+        # for obj in detections
             ## step 3 : perform the conversion using the limits for x, y and z set in the configs structure
         
             ## step 4 : append the current object to the 'objects' array
