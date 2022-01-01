@@ -101,7 +101,7 @@ def show_range_image(frame, lidar_name):
     # step 5 : map the intensity channel onto an 8-bit scale and normalize with the difference between the 1- and 99-percentile to mitigate the influence of outliers
     # multiple entire range with half of max value to contrast adjust, else you will only see bright spots
     # normalize adjusted range and map to grayscale
-    ri_intensity = (np.percentile(ri_intensity,99)/2) * ri_intensity * 255 /(np.percentile(ri_intensity,99)-np.percentile(ri_intensity, 1))
+    ri_intensity = (np.percentile(ri_intensity,99)/2) * ri_intensity/(np.percentile(ri_intensity,99)-np.percentile(ri_intensity, 1))
     image_intensity = ri_intensity.astype(np.uint8)
     
     # step 6 : stack the range and intensity image vertically using np.vstack and convert the result to an unsigned 8-bit integer
@@ -167,8 +167,9 @@ def bev_from_pcl(lidar_pcl, configs):
     ##          make sure that the intensity is scaled in such a way that objects of interest (e.g. vehicles) are clearly visible    
     ##          also, make sure that the influence of outliers is mitigated by normalizing intensity on the difference between the max. and min. value within the point cloud
     lidar_pcl_top[lidar_pcl_top[:,3]>1.0, 3] = 1.0
+    lidar_pcl_top[lidar_pcl_top[:,3]<0.0, 3] = 0.0
     
-    intensity_map[np.int_(lidar_pcl_top[:, 0]), np.int_(lidar_pcl_top[:, 1])] = lidar_pcl_top[:, 3]*255 /(np.percentile(lidar_pcl_top[:, 3], 99)-np.percentile(lidar_pcl_top[:, 3],1))
+    intensity_map[np.int_(lidar_pcl_top[:, 0]), np.int_(lidar_pcl_top[:, 1])] = lidar_pcl_top[:, 3] /(np.percentile(lidar_pcl_top[:, 3], 99)-np.percentile(lidar_pcl_top[:, 3],1))
     
     ## step 5 : temporarily visualize the intensity map using OpenCV to make sure that vehicles separate well from the background
     cv2.imshow("intensity_map", intensity_map)
