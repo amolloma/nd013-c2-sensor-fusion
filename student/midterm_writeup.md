@@ -91,3 +91,31 @@ Identifiable vehicle feature in the above lidar :
 
 #### Ideal Precision/Recall using Groundtruths as labels
 ![](/img/Ideal_precision_recall.png)
+
+### Model Based Object Detection in BEV
+Set the following parameters in the loop_over_dataset before running
+    - data_filename = # Sequence 1
+    - line 61 : model = 'fpn_resnet'
+    - line 62 : sequence = 1
+    - configs_det = det.load_configs(model_name='fpn_resnet')
+    - exec_detection = ['bev_from_pcl', 'detect_objects']
+    - exec_visualization = ['show_objects_in_bev_labels_in_camera']
+
+Following results are for frame 50, 51, and 150:
+
+#### Frame 50 
+![](/img/camera_detect_1.png)
+![](/img/bev_detect_1.png)
+
+#### Frame 51
+![](/img/camera_detect_2.png)
+![](/img/bev_detect_2.png)
+
+#### Frame 150 
+![](/img/camera_detect_3.png)
+![](/img/bev_detect_3.png)
+
+Following screen shots of successful terminal outputs
+![](/img/frame_150_run.png)
+
+![](/img/frame_50_run.png)
