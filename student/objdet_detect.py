@@ -223,6 +223,7 @@ def detect_objects(input_bev_maps, model, configs):
             detections = detections.cpu().numpy().astype(np.float32)
             detections = post_processing(detections, configs)
             detections = detections[0][1]
+            print ("detections", detections)
 
             #######
             ####### ID_S3_EX1-5 END #######         
