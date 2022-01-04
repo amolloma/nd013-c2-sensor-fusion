@@ -51,6 +51,39 @@ Identifiable vehicle feature in the above lidar :
     - Front and Rear right tires
     - Truck rear, trailer
 
+#### Example 7:
+![](/img/lidar_7.png)
+
+Identifiable vehicle feature in the above lidar :
+    - Tail light and number plate of left most car
+    - Front and Rear right tires
+    - Car Roof , Rear windows, Side windows
+
+#### Example 8:
+![](/img/lidar_8.png)
+
+Identifiable vehicle feature in the above lidar :
+    - Truck Front Bumper, Truck Roof
+    - Ladder on the rear of the Truck, A small trailer
+    - Front and Rear right tires
+    - Front and Side Windows
+
+#### Example 9:
+![](/img/lidar_9.png)
+
+Identifiable vehicle feature in the above lidar :
+    - Jeep Side view, with side doors & windows
+    - Front and Rear right tires
+    - Rear bumper and taillights
+
+#### Example 10:
+![](/img/lidar_10.png)
+
+Identifiable vehicle feature in the above lidar :
+    - Truck Front Bumper, Truck Roof
+    - Truck Front lights
+    - Car roof, front lights, windshield
+
 ### Following are the Precision and Recall Plots
 
 #### Using Sequence 1, Frames 50 to 150
