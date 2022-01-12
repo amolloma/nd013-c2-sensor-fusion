@@ -24,69 +24,81 @@ import misc.params as params
 class Filter:
     '''Kalman filter class'''
     def __init__(self):
-        pass
+        self.dim_state = params.dim_state
+        self.dt = params.dt
+        self.q = params.q
 
     def F(self):
-        ############
-        # TODO Step 1: implement and return system matrix F
-        ############
-
-        return 0
+        """Implements and returns system matrix F"""
+        # model is assumed to be constant velocity
+        dt = self.dt
         
-        ############
-        # END student code
-        ############ 
+        return np.matrix([[1, 0, 0, dt, 0, 0],
+                        [0, 1, 0, 0, dt, 0],
+                        [0, 0, 1, 0, 0 , dt],
+                        [0, 0, 0, 1, 0, 0],
+                        [0, 0, 0, 0, 1, 0],
+                        [0, 0, 0, 0, 0, 1]])
 
     def Q(self):
-        ############
-        # TODO Step 1: implement and return process noise covariance Q
-        ############
-
-        return 0
+        """implement and return process noise covariance Q"""
         
-        ############
-        # END student code
-        ############ 
+        # Q(dt) = integral (F*Q*F.transpose()), where q in Q only affects the velocity
+        
+        q = self.q  # process noise variable
+        dt = self.dt
+        q1 = ((dt**3)/3) * q 
+        q2 = ((dt**2)/2) * q 
+        q3 = dt * q 
+        return np.matrix([[q1, 0, 0, q2, 0, 0],
+                        [0, q1, 0, 0, q2, 0],
+                        [0, 0, q1, 0, 0, q2],
+                        [q2, 0, 0, q3, 0, 0],
+                        [0, q2, 0, 0, q3, 0],
+                        [0, 0, q2, 0, 0, q3]])
 
     def predict(self, track):
-        ############
-        # TODO Step 1: predict state x and estimation error covariance P to next timestep, save x and P in track
-        ############
-
-        pass
         
-        ############
-        # END student code
-        ############ 
+        """Predict state x and estimation error covariance P to next timestep, save x and P in track """
+        
+        x_minus = np.matmul(self.F(), track.x)
+        P_minus = np.matmul(np.matmul(self.F(), track.P), self.F().transpose()) + self.Q()
+
+        # save predicted state x and covariance P to track 
+        track.set_x(x_minus)
+        track.set_P(P_minus)
 
     def update(self, track, meas):
-        ############
-        # TODO Step 1: update state x and covariance P with associated measurement, save x and P in track
-        ############
+        """ update state x and covariance P with associated measurement, save x and P in track"""
         
-        ############
-        # END student code
-        ############ 
+        # K = P-*H jacobian transpose * residual covariance inverse
+        H = meas.sensor.get_H(track.x)
+        S = self.S(track, meas, H)
+        K = track.P*H.transpose()*np.linalg.inv(S)
+        
+        # updated x = predicted x + K * gamma
+        x_plus = track.x + K * self.gamma(track, meas)
+        
+        # updated P = (I - K*H jacobian) * P-
+        I = np.identity(self.dim_state)
+        P_plus = (I - K*H)*track.P
+        
+        track.set_x(x_plus)
+        track.set_P(P_plus)
+        
         track.update_attributes(meas)
     
     def gamma(self, track, meas):
-        ############
-        # TODO Step 1: calculate and return residual gamma
-        ############
-
-        return 0
+        """calculate and return residual gamma"""
+        # gamma = measurement_z - h(x)
         
-        ############
-        # END student code
-        ############ 
+        y = meas.z - meas.sensor.get_hx(track.x)
+        
+        return y
 
     def S(self, track, meas, H):
-        ############
-        # TODO Step 1: calculate and return covariance of residual S
-        ############
-
-        return 0
+        """calculate and return covariance of residual S """
         
-        ############
-        # END student code
-        ############ 
+        # S = H*prediction covariance P * H.transpose()+ measurement covariance R
+
+        return H*track.P*H.transpose() + meas.R
