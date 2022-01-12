@@ -13,3 +13,12 @@ Please use this starter template to answer the following questions:
 
 ### 4. Can you think of ways to improve your tracking results in the future?
 
+# Task 1 Results and Plots
+
+#### Plot showing 3D image detection and vehicle coordinate detection
+
+![](/img/final/Task_1_plot.png)
+
+#### Extended Kalman Filter RMSE (Evaluation Metric)
+
+![](/img/final/Task_1_RMSE.png)
