@@ -22,3 +22,7 @@ Please use this starter template to answer the following questions:
 #### Extended Kalman Filter RMSE (Evaluation Metric)
 
 ![](/img/final/Task_1_RMSE.png)
+
+# Task 2 Result Plot
+
+![](/img/final/Task_2_RMSE.png)
