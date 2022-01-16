@@ -48,7 +48,8 @@ class Association:
             for j in range(M):
                 meas = meas_list[j]
                 dist = self.MHD(track, meas, KF)
-                self.association_matrix[i,j] = dist
+                if self.gating (dist, meas.sensor):
+                    self.association_matrix[i,j] = dist
                 
     def get_closest_track_and_meas(self):
         
@@ -87,7 +88,7 @@ class Association:
         
         '''return True if measurement lies inside gate, otherwise False'''
         p = params.gating_threshold
-        df = params.dim_state
+        df = sensor.dim_meas
         
         limit = chi2.ppf(p, df) 
         
